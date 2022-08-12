@@ -1,0 +1,301 @@
+---
+title: "Final Project"
+author: "Sydney Alexander Muck"
+date: "4/28/2022"
+output:
+  word_document: default
+  html_document: default
+---
+
+Upload dataset and load packages
+```{r}
+library(readr)
+data1<- read_csv("C:/Users/Sydney/Desktop/Life Expectancy Data project.csv")
+View(data1)
+
+
+library(tidyverse)
+library(ggpubr)
+library(car)
+library(lmtest)
+library(leaps)
+library(asbio)
+library(faraway)
+library(data.table)
+library(DT)
+library(kableExtra)
+library(knitr)
+library(scales)
+library(caret)
+library(psych)
+library(stats)
+library(GGally)
+library(MASS)
+library(MLmetrics)
+
+```
+
+
+Missing values
+```{r}
+
+NAvalues <-sapply(data1, function(x) sum(length(which(is.na(x)))))
+
+
+kable(as.data.frame(NAvalues))
+
+#use median for missing values
+life_med <- median(data1$expectancy,  na.rm = TRUE)
+mortality_med <- median(data1$Adult.Mortality,  na.rm = TRUE)
+alcohol_med<-median(data1$Alcohol,na.rm=TRUE)
+BMI_med<-median(data1$BMI,na.rm=TRUE)
+hepatitis_med <- median(data1$Hepatitis_B,  na.rm = TRUE)
+polio_med <- median(data1$Polio,  na.rm = TRUE)
+diph_med <- median(data1$Diphtheria,  na.rm = TRUE)
+exp_med <- median(data1$Total_expenditure,  na.rm = TRUE)
+gdp_med <- median(data1$GDP,  na.rm = TRUE)
+pop_med <- median(data1$Population,  na.rm = TRUE)
+thin19_med <- median(data1$thinness1_19,  na.rm = TRUE)
+thin9_med <- median(data1$thinness5_9,  na.rm = TRUE)
+income_med<- median(data1$Income_composition, na.rm=TRUE)
+school_med <- median(data1$Schooling,  na.rm = TRUE)
+
+
+#replace missing values with median
+data1$expectancy[is.na(data1$expectancy)] <- life_med
+data1$Adult.Mortality[is.na(data1$Adult.Mortality)] <- mortality_med
+data1$Alcohol[is.na(data1$Alcohol)] <- alcohol_med
+data1$BMI[is.na(data1$BMI)] <- BMI_med
+data1$Hepatitis_B[is.na(data1$Hepatitis_B)] <- hepatitis_med
+data1$Polio[is.na(data1$Polio)] <- polio_med
+data1$Diphtheria[is.na(data1$Diphtheria)] <- diph_med
+data1$Total_expenditure[is.na(data1$Total_expenditure)] <- exp_med
+data1$GDP[is.na(data1$GDP)] <- gdp_med
+data1$Population[is.na(data1$Population)] <- pop_med
+data1$thinness1_19[is.na(data1$thinness1_19)] <- thin19_med
+data1$thinness5_9[is.na(data1$thinness5_9)] <- thin9_med
+data1$Income_composition[is.na(data1$Income_composition)] <- income_med
+data1$Schooling[is.na(data1$Schooling)] <- school_med
+```
+
+
+
+FUll Model
+```{r}
+hist(data1$expectancy,
+      main = "Life Expectancy Distribution",
+     xlab = "Life Expectancy(yrs)")
+
+m1<-lm(expectancy ~. -Country,
+                data = data1)
+summary(m1)
+plot(m1)
+
+
+```
+
+
+```{r}
+ggcorr(data1,method=c("pairwise"))
+```
+
+Alcohol
+```{r}
+
+par(mfrow=c(2,2))
+layout(matrix(c(1,1,2,3), 2, 2, byrow = F),
+   widths=c(1,1), heights=c(1,1))
+boxplot(data1$Alcohol,
+        main = "Alcohol consumption")         #
+plot(density(data1$Alcohol),
+     main = "Distribution of Alcohol consumed",
+     xlab = "Alcohol(litres)") 
+plot(density(data1$Alcohol^0.5),
+     main = "Distribution of Alcohol consumed",
+     xlab = "Alcohol(litres)") 
+
+```
+
+
+
+BMI
+```{r}
+par(mfrow=c(2,2))
+layout(matrix(c(1,1,2,3), 2, 2, byrow = F),
+   widths=c(1,1), heights=c(1,1))
+boxplot(data1$BMI,
+        main = "BMI")         
+plot(density(data1$BMI),
+     main = "Distribution of BMI",
+     xlab = "BMI")  
+plot(density(data1$BMI^0.5),
+     main = "Distribution of BMI",
+     xlab = "BMI")
+```
+
+
+Income_composition
+```{r}
+
+par(mfrow=c(2,2))
+layout(matrix(c(1,1,2,3), 2, 2, byrow = F),
+   widths=c(1,1), heights=c(1,1))
+boxplot(data1$Income_composition,
+        main = "Income_composition")         
+plot(density(data1$Income_composition),
+     main = "Distribution of Income_composition",
+     xlab = "Income_composition")  
+plot(density(data1$Income_composition^0.5),
+     main = "Distribution of Income_composition",
+     xlab = "Income_composition") 
+```
+
+
+
+GDP
+```{r}
+par(mfrow=c(2,2))
+layout(matrix(c(1,1,2,3), 2, 2, byrow = F),
+   widths=c(1,1), heights=c(1,1))
+boxplot(data1$GDP,
+        main = "GDP")         
+plot(density(data1$GDP),
+     main = "Distribution of GDP",
+     xlab = "GDP")  
+plot(density(data1$GDP^0.5),
+     main = "Distribution of GDP",
+     xlab = "GDP")
+
+```
+
+
+Total expenditure
+
+```{r}
+
+par(mfrow=c(2,2))
+layout(matrix(c(1,1,2,3), 2, 2, byrow = F),
+   widths=c(1,1), heights=c(1,1))
+boxplot(data1$Total_expenditure,
+        main = "Total expenditure")         
+plot(density(data1$Total_expenditure),
+     main = "Distribution of Total expenditure",
+     xlab = "Total expenditure")  
+plot(density(data1$Total_expenditure^0.5),
+     main = "Distribution of Total expenditure",
+     xlab = "Total expenditure") 
+```
+
+
+percent expenditure
+```{r}
+par(mfrow=c(2,2))
+layout(matrix(c(1,1,2,3), 2, 2, byrow = F),
+   widths=c(1,1), heights=c(1,1))
+boxplot(data1$percentage_expenditure,
+        main = "Percentage expenditure")         
+plot(density(data1$percentage_expenditure),
+     main = "Distribution of Percentage expenditure",
+     xlab = "Percentage expenditure")  
+plot(density(data1$percentage_expenditure^0.5),
+     main = "Distribution of Percentage expenditure",
+     xlab = "Percentage expenditure")
+```
+School
+```{r}
+par(mfrow=c(2,2))
+layout(matrix(c(1,1,2,3), 2, 2, byrow = F),
+   widths=c(1,1), heights=c(1,1))
+boxplot(data1$Schooling,
+        main = "Years of Schooling")         
+plot(density(data1$Schooling),
+     main = "Distribution of Years of Schooling",
+     xlab = "Years of Schooling")  
+plot(density(data1$Schooling^0.5),
+     main = "Distribution of Years of Schooling",
+     xlab = "Years of Schooling")
+```
+
+Removing Outliers
+
+```{r}
+income_outliers <- boxplot(data1$Income_composition, plot=FALSE)$out
+data2<- data1[-which(data1$Income_composition %in% income_outliers),]
+
+boxplot(data2$Income_composition)
+
+
+alcohol_outliers <- boxplot(data1$Alcohol, plot=FALSE)$out
+data2<- data1[-which(data1$Alcohol %in% alcohol_outliers),]
+
+boxplot(data2$Alcohol)
+
+
+school_outliers <- boxplot(data1$Schooling, plot=FALSE)$out
+data2<- data1[-which(data1$Schooling %in% school_outliers),]
+
+boxplot(data2$Schooling)
+
+
+
+expenditure_outliers <- boxplot(data1$Total_expenditure, plot=FALSE)$out
+data2<- data1[-which(data1$Total_expenditure %in% expenditure_outliers),]
+
+boxplot(data2$Total_expenditure)
+```
+
+
+
+
+Single Models
+```{r}
+alcohol_fit<-lm(expectancy~Alcohol, data=data2)
+summary(alcohol_fit)
+
+plot(expectancy~Alcohol, data=data2)
+abline(alcohol_fit, col='blue', lwd=5)
+
+BMI_fit<-lm(expectancy~BMI, data=data2)
+summary(BMI_fit)
+
+plot(expectancy~BMI, data=data2)
+abline(BMI_fit, col='blue', lwd=5)
+
+income_fix<-lm(expectancy~Income_composition, data=data2)
+summary(income_fix)
+
+plot(expectancy~Income_composition, data=data2)
+abline(income_fix, col='blue', lwd=5)
+
+expenditure_fit<-lm(expectancy~Total_expenditure, data=data2)
+summary(expenditure_fit)
+
+plot(expectancy~Total_expenditure, data=data2)
+abline(expenditure_fit, col='blue', lwd=5)
+
+school_fit<-lm(expectancy~Schooling, data=data2)
+summary(school_fit)
+
+plot(expectancy~Schooling, data=data2)
+abline(school_fit, col='blue', lwd=5)
+```
+
+
+
+Multiple Linear regression
+```{r}
+multi_fit<-lm(formula= expectancy~Alcohol + Income_composition + Schooling +BMI +Total_expenditure, data=data2)
+summary(multi_fit)
+
+plot(multi_fit)
+```
+
+
+```{r}
+multi_fit2<-lm(formula= expectancy~Income_composition + Schooling+BMI+Total_expenditure, data=data2)
+summary(multi_fit2)
+plot(multi_fit2)
+
+
+```
+
